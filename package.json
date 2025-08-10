@@ -1,0 +1,17 @@
+{
+  "name": "workly-docs-ai",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "embed": "node scripts/embed-docs.js",
+    "scrape": "node scripts/scrape-docs.js",
+    "scrape:spa": "node scripts/scrape-spa-docs.js",
+    "dev": "cd public && python -m http.server 8000"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "cheerio": "^1.0.0-rc.12",
+    "turndown": "^7.1.2",
+    "node-fetch": "^3.3.2"
+  }
+}

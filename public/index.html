@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workly API Assistant</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #2d3748;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .header h1 {
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            color: #718096;
+            font-size: 18px;
+        }
+        
+        .api-key-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .api-key-section label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 16px;
+        }
+        
+        .api-key-section input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            transition: all 0.3s ease;
+        }
+        
+        .api-key-section input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .chat-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .chat-header h2 {
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+        
+        .chat-messages {
+            height: 500px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        
+        .message {
+            margin-bottom: 25px;
+            border-radius: 15px;
+            max-width: 85%;
+            animation: fadeInUp 0.3s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .message.user {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            margin-left: auto;
+            padding: 15px 20px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .message.assistant {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .message.assistant .content {
+            color: #2d3748;
+            line-height: 1.7;
+        }
+        
+        .message.assistant h1, .message.assistant h2, .message.assistant h3 {
+            color: #4a5568;
+            margin: 15px 0 10px 0;
+        }
+        
+        .message.assistant code {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        
+        .message.assistant pre {
+            background: #2d3748 !important;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        
+        .message.assistant pre code {
+            background: none !important;
+            color: #e2e8f0 !important;
+            padding: 0;
+        }
+        
+        .message.assistant blockquote {
+            border-left: 4px solid #667eea;
+            margin: 15px 0;
+            padding: 10px 15px;
+            background: #f7fafc;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .message.error {
+            background: linear-gradient(135deg, #fc8181, #e53e3e);
+            color: white;
+            padding: 15px 20px;
+            box-shadow: 0 4px 15px rgba(229, 62, 62, 0.3);
+        }
+        
+        .message.loading {
+            background: linear-gradient(135deg, #ed8936, #dd6b20);
+            color: white;
+            text-align: center;
+            padding: 15px 20px;
+            box-shadow: 0 4px 15px rgba(237, 137, 54, 0.3);
+        }
+        
+        .sources {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+        }
+        
+        .sources h4 {
+            margin-bottom: 15px;
+            color: #4a5568;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .source {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .source:hover {
+            background: #edf2f7;
+            border-color: #667eea;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .source-header {
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .source-link {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 4px 8px;
+            background: #edf2f7;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        
+        .source-link:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .source-text {
+            color: #718096;
+            font-style: italic;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .citation {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 0 2px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        
+        .citation:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        }
+        
+        .input-container {
+            padding: 25px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .input-group input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .input-group button {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .input-group button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .input-group button:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .examples {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .examples h3 {
+            margin-bottom: 15px;
+            color: #4a5568;
+            font-size: 18px;
+        }
+        
+        .example-queries {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .example-query {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            padding: 10px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            color: #4a5568;
+            font-weight: 500;
+        }
+        
+        .example-query:hover {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .copy-button {
+            background: #edf2f7;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #4a5568;
+            margin-left: 10px;
+        }
+        
+        .copy-button:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .status-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+        
+        .status-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .status-indicator.success {
+            background: rgba(72, 187, 120, 0.9);
+        }
+        
+        .status-indicator.error {
+            background: rgba(229, 62, 62, 0.9);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Workly API Assistant</h1>
+            <p>Intelligent documentation search powered by Gemini AI</p>
+        </div>
+
+        <div class="api-key-section">
+            <label for="apiKey">🔑 Gemini API Key:</label>
+            <input type="password" id="apiKey" placeholder="Enter your Gemini API key for AI-powered search">
+            <small style="color: #718096; font-size: 12px; margin-top: 8px; display: block;">
+                Get your free API key at <a href="https://ai.google.dev/" target="_blank" style="color: #667eea;">ai.google.dev</a>
+            </small>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-header">
+                <h2>💬 Ask anything about the Workly API</h2>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message assistant">
+                    <div class="content">
+                        <h3>👋 Welcome to Workly API Assistant!</h3>
+                        <p>I'm ready to help you with the Workly API documentation. Enter your Gemini API key above and ask me anything about:</p>
+                        <ul style="margin: 15px 0 15px 20px;">
+                            <li>Authentication & OAuth</li>
+                            <li>Employee management</li>
+                            <li>Department operations</li>
+                            <li>API endpoints & parameters</li>
+                            <li>Error handling</li>
+                            <li>And much more!</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-container">
+                <div class="input-group">
+                    <input type="text" id="questionInput" placeholder="Ask about authentication, employees, departments..." disabled>
+                    <button id="askButton" disabled>✨ Ask</button>
+                </div>
+                
+                <div class="examples">
+                    <h3>💡 Try these questions:</h3>
+                    <div class="example-queries">
+                        <button class="example-query" data-query="How do I authenticate with the Workly API?">🔐 Authentication</button>
+                        <button class="example-query" data-query="How do I get a list of all employees? Show me the GET employees endpoint">👥 Employee list</button>
+                        <button class="example-query" data-query="How do I create a new employee?">👤 Create employee</button>
+                        <button class="example-query" data-query="Show me department endpoints">🏢 Departments</button>
+                        <button class="example-query" data-query="What are the API rate limits and pagination?">⚡ Limits & pagination</button>
+                        <button class="example-query" data-query="Show me error response formats and status codes">❌ Error handling</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-indicator" id="statusIndicator"></div>
+
+    <script src="rag-client.js"></script>
+    <script>
+        class ChatUI {
+            constructor() {
+                this.rag = null;
+                this.setupEventListeners();
+                this.citationMap = new Map();
+            }
+
+            showStatus(message, type = 'info') {
+                const indicator = document.getElementById('statusIndicator');
+                indicator.textContent = message;
+                indicator.className = `status-indicator show ${type}`;
+                setTimeout(() => {
+                    indicator.className = 'status-indicator';
+                }, 3000);
+            }
+
+            setupEventListeners() {
+                const apiKeyInput = document.getElementById('apiKey');
+                const questionInput = document.getElementById('questionInput');
+                const askButton = document.getElementById('askButton');
+                const exampleQueries = document.querySelectorAll('.example-query');
+
+                apiKeyInput.addEventListener('input', (e) => {
+                    const hasKey = e.target.value.trim().length > 0;
+                    questionInput.disabled = !hasKey;
+                    askButton.disabled = !hasKey;
+                    
+                    if (hasKey && !this.rag) {
+                        this.rag = new SimpleRAG(e.target.value.trim());
+                        this.addMessage('system', '🔑 API key configured! Loading document index...');
+                        this.preloadIndex();
+                    } else if (!hasKey) {
+                        this.rag = null;
+                    }
+                });
+
+                questionInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !askButton.disabled) {
+                        this.askQuestion();
+                    }
+                });
+
+                askButton.addEventListener('click', () => {
+                    this.askQuestion();
+                });
+
+                exampleQueries.forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const query = e.target.dataset.query;
+                        questionInput.value = query;
+                        if (this.rag) {
+                            this.askQuestion();
+                        }
+                    });
+                });
+
+                // Copy functionality
+                document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('copy-button')) {
+                        const textToCopy = e.target.dataset.copy;
+                        navigator.clipboard.writeText(textToCopy).then(() => {
+                            this.showStatus('✅ Copied to clipboard!', 'success');
+                        });
+                    }
+                });
+            }
+
+            async preloadIndex() {
+                try {
+                    await this.rag.loadIndex();
+                    this.addMessage('system', '✅ Document index loaded! Ready to answer your questions.');
+                    this.showStatus('📚 Documentation loaded successfully!', 'success');
+                } catch (error) {
+                    this.addMessage('error', `❌ Failed to load document index: ${error.message}`);
+                    this.showStatus('❌ Failed to load documents', 'error');
+                }
+            }
+
+            processMarkdown(text) {
+                // Configure marked options
+                marked.setOptions({
+                    highlight: function(code, lang) {
+                        if (lang && Prism.languages[lang]) {
+                            return Prism.highlight(code, Prism.languages[lang], lang);
+                        }
+                        return code;
+                    },
+                    breaks: true,
+                    gfm: true
+                });
+
+                return marked.parse(text);
+            }
+
+            addCitationLinks(content, sources) {
+                if (!sources || sources.length === 0) return content;
+
+                // Clear previous citation map for this message
+                this.citationMap.clear();
+
+                // Store sources in citation map
+                sources.forEach((source, index) => {
+                    this.citationMap.set(index + 1, source);
+                });
+
+                // Replace citation patterns [1], [2], etc. with clickable links
+                const citationRegex = /\[(\d+(?:,\s*\d+)*)\]/g;
+                
+                return content.replace(citationRegex, (match, numbers) => {
+                    const nums = numbers.split(',').map(n => n.trim());
+                    return nums.map(num => {
+                        const sourceIndex = parseInt(num) - 1;
+                        if (sources[sourceIndex]) {
+                            return `<a href="#source-${num}" class="citation" onclick="this.scrollToSource(${num})">[${num}]</a>`;
+                        }
+                        return `<span class="citation">[${num}]</span>`;
+                    }).join(' ');
+                });
+            }
+
+            scrollToSource(citationNum) {
+                const sourceElement = document.querySelector(`[data-source-id="${citationNum}"]`);
+                if (sourceElement) {
+                    sourceElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    sourceElement.style.background = '#fff3cd';
+                    setTimeout(() => {
+                        sourceElement.style.background = '#f7fafc';
+                    }, 2000);
+                }
+            }
+
+            addMessage(type, content, sources = null) {
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                
+                let className = 'message ';
+                switch (type) {
+                    case 'user':
+                        className += 'user';
+                        break;
+                    case 'assistant':
+                        className += 'assistant';
+                        break;
+                    case 'error':
+                        className += 'error';
+                        break;
+                    case 'loading':
+                        className += 'loading';
+                        break;
+                    case 'system':
+                        className += 'assistant';
+                        break;
+                }
+                
+                messageDiv.className = className;
+                
+                if (type === 'assistant' && sources) {
+                    // Process markdown and add citation links
+                    const processedContent = this.addCitationLinks(content, sources);
+                    const markdownContent = this.processMarkdown(processedContent);
+                    
+                    let html = `<div class="content">${markdownContent}</div>`;
+                    
+                    // Add sources section
+                    html += '<div class="sources"><h4>📚 Sources & References:</h4>';
+                    sources.forEach((source, i) => {
+                        const preview = source.text.substring(0, 200) + (source.text.length > 200 ? '...' : '');
+                        const similarity = (source.similarity * 100).toFixed(1);
+                        
+                        html += `
+                            <div class="source" data-source-id="${i + 1}" id="source-${i + 1}">
+                                <div class="source-header">
+                                    <span><strong>[${i + 1}]</strong> ${source.file}</span>
+                                    <div>
+                                        <span style="color: #718096; font-size: 12px;">Relevance: ${similarity}%</span>
+                                        <button class="copy-button" data-copy="${source.text}">📋 Copy</button>
+                                    </div>
+                                </div>
+                                <div class="source-text">${preview}</div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                    
+                    messageDiv.innerHTML = html;
+                } else if (type === 'assistant') {
+                    // Regular assistant message with markdown
+                    const markdownContent = this.processMarkdown(content);
+                    messageDiv.innerHTML = `<div class="content">${markdownContent}</div>`;
+                } else {
+                    // Other message types
+                    messageDiv.innerHTML = content.replace(/\n/g, '<br>');
+                }
+                
+                messagesContainer.appendChild(messageDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                // Trigger syntax highlighting for code blocks
+                if (type === 'assistant') {
+                    Prism.highlightAllUnder(messageDiv);
+                }
+                
+                return messageDiv;
+            }
+
+            async askQuestion() {
+                const questionInput = document.getElementById('questionInput');
+                const askButton = document.getElementById('askButton');
+                const question = questionInput.value.trim();
+                
+                if (!question || !this.rag) return;
+
+                // Add user message
+                this.addMessage('user', question);
+                questionInput.value = '';
+                
+                // Show loading
+                const loadingMessage = this.addMessage('loading', '🤔 Searching documentation and generating answer...');
+                askButton.disabled = true;
+                questionInput.disabled = true;
+
+                try {
+                    const result = await this.rag.query(question);
+                    
+                    // Remove loading message
+                    loadingMessage.remove();
+                    
+                    // Add assistant response with enhanced formatting
+                    this.addMessage('assistant', result.answer, result.sources);
+                    this.showStatus('✅ Answer ready!', 'success');
+                    
+                } catch (error) {
+                    // Remove loading message
+                    loadingMessage.remove();
+                    
+                    // Add error message
+                    this.addMessage('error', `❌ Error: ${error.message}`);
+                    this.showStatus('❌ Something went wrong', 'error');
+                } finally {
+                    askButton.disabled = false;
+                    questionInput.disabled = false;
+                    questionInput.focus();
+                }
+            }
+        }
+
+        // Initialize the chat UI
+        window.scrollToSource = function(num) {
+            const sourceElement = document.querySelector(`[data-source-id="${num}"]`);
+            if (sourceElement) {
+                sourceElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                sourceElement.style.background = '#fff3cd';
+                setTimeout(() => {
+                    sourceElement.style.background = '#f7fafc';
+                }, 2000);
+            }
+        };
+
+        new ChatUI();
+    </script>
+</body>
+</html>
