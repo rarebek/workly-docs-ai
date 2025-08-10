@@ -9,7 +9,7 @@ A minimal RAG (Retrieval-Augmented Generation) system that works entirely in the
 - 🌐 **Client-side search** - No backend required, runs entirely in browser  
 - 📱 **Static hosting friendly** - Deploy anywhere (GitHub Pages, Netlify, etc.)
 - 🆓 **Free tier friendly** - Uses Gemini's free API endpoints
-- ⚡ **Fast responses** - Optimized for speed with Gemini 1.5 Flash
+- ⚡ **Fast responses** - Optimized for speed with Gemini 2.5 Flash
 
 ## Quick Start
 
@@ -146,6 +146,7 @@ export default async function handler(req, res) {
 - **Chunking**: Adjust `CHUNK_SIZE` and `CHUNK_OVERLAP` for your content
 - **Retrieval**: Modify `topK` parameter in search function
 - **Generation**: Update system prompt in `generateAnswer()` method
+- **Models**: Now uses Gemini 2.5 Flash with temperature 0.2 and 65536 max output tokens
 
 ## Deployment
 

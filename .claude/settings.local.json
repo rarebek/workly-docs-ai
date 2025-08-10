@@ -12,7 +12,9 @@
       "Bash(node:*)",
       "Bash(git init:*)",
       "Bash(git remote add:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "WebFetch(domain:ai.google.dev)"
     ],
     "deny": []
   }
