@@ -106,25 +106,43 @@ class SimpleRAG {
     // Extract key terms from query
     const queryTerms = queryLower.match(/\b\w+\b/g) || [];
     
-    // Define keyword mappings for better matching
+    // Define keyword mappings for better matching (English, Russian, Uzbek)
     const keywordMappings = {
-      'employee': ['employees', 'сотрудник', 'сотрудники', 'employee'],
-      'employees': ['employee', 'сотрудник', 'сотрудники', 'employees'],
-      'list': ['список', 'list', 'get'],
-      'authentication': ['auth', 'oauth', 'token', 'аутентификация', 'авторизация'],
-      'department': ['отдел', 'отделы', 'departments', 'department'],
-      'position': ['должность', 'должности', 'positions', 'position'],
-      'error': ['errors', 'ошибка', 'ошибки', 'error'],
-      'errors': ['error', 'ошибка', 'ошибки', 'errors'],
-      'code': ['codes', 'код', 'коды', 'code'],
-      'codes': ['code', 'код', 'коды', 'codes'],
-      'validation': ['валидация', 'validation'],
-      'authorization': ['авторизация', 'authorization', 'auth'],
-      'ошибка': ['error', 'errors', 'ошибка', 'ошибки'],
-      'ошибки': ['error', 'errors', 'ошибка', 'ошибки'],
-      'код': ['code', 'codes', 'код', 'коды'],
-      'коды': ['code', 'codes', 'код', 'коды'],
-      'авторизация': ['authorization', 'auth', 'аутентификация', 'авторизация']
+      'employee': ['employees', 'сотрудник', 'сотрудники', 'employee', 'xodim', 'xodimlar'],
+      'employees': ['employee', 'сотрудник', 'сотрудники', 'employees', 'xodim', 'xodimlar'],
+      'list': ['список', 'list', 'get', 'royxat'],
+      'authentication': ['auth', 'oauth', 'token', 'аутентификация', 'авторизация', 'autentifikatsiya', 'ruxsat'],
+      'department': ['отдел', 'отделы', 'departments', 'department', 'bolim', 'bolimlar'],
+      'position': ['должность', 'должности', 'positions', 'position', 'lavozim', 'lavozimlar'],
+      'error': ['errors', 'ошибка', 'ошибки', 'error', 'xato', 'xatolar'],
+      'errors': ['error', 'ошибка', 'ошибки', 'errors', 'xato', 'xatolar'],
+      'code': ['codes', 'код', 'коды', 'code', 'kod', 'kodlar'],
+      'codes': ['code', 'код', 'коды', 'codes', 'kod', 'kodlar'],
+      'validation': ['валидация', 'validation', 'tekshirish'],
+      'authorization': ['авторизация', 'authorization', 'auth', 'avtorizatsiya', 'ruxsat'],
+      // Russian terms
+      'ошибка': ['error', 'errors', 'ошибка', 'ошибки', 'xato', 'xatolar'],
+      'ошибки': ['error', 'errors', 'ошибка', 'ошибки', 'xato', 'xatolar'],
+      'код': ['code', 'codes', 'код', 'коды', 'kod', 'kodlar'],
+      'коды': ['code', 'codes', 'код', 'коды', 'kod', 'kodlar'],
+      'авторизация': ['authorization', 'auth', 'аутентификация', 'авторизация', 'avtorizatsiya', 'ruxsat'],
+      'сотрудник': ['employee', 'employees', 'сотрудник', 'сотрудники', 'xodim', 'xodimlar'],
+      'сотрудники': ['employee', 'employees', 'сотрудник', 'сотрудники', 'xodim', 'xodimlar'],
+      // Uzbek terms
+      'xodim': ['employee', 'employees', 'сотрудник', 'сотрудники', 'xodim', 'xodimlar'],
+      'xodimlar': ['employee', 'employees', 'сотрудник', 'сотрудники', 'xodim', 'xodimlar'],
+      'xato': ['error', 'errors', 'ошибка', 'ошибки', 'xato', 'xatolar'],
+      'xatolar': ['error', 'errors', 'ошибка', 'ошибки', 'xato', 'xatolar'],
+      'kod': ['code', 'codes', 'код', 'коды', 'kod', 'kodlar'],
+      'kodlar': ['code', 'codes', 'код', 'коды', 'kod', 'kodlar'],
+      'bolim': ['department', 'отдел', 'отделы', 'departments', 'bolim', 'bolimlar'],
+      'bolimlar': ['department', 'отдел', 'отделы', 'departments', 'bolim', 'bolimlar'],
+      'lavozim': ['position', 'должность', 'должности', 'positions', 'lavozim', 'lavozimlar'],
+      'lavozimlar': ['position', 'должность', 'должности', 'positions', 'lavozim', 'lavozimlar'],
+      'royxat': ['list', 'список', 'list', 'get', 'royxat'],
+      'tekshirish': ['validation', 'валидация', 'validation', 'tekshirish'],
+      'avtorizatsiya': ['authorization', 'auth', 'авторизация', 'аутентификация', 'avtorizatsiya', 'ruxsat'],
+      'ruxsat': ['authorization', 'auth', 'авторизация', 'аутентификация', 'avtorizatsiya', 'ruxsat']
     };
     
     let score = 0;
@@ -185,32 +203,34 @@ class SimpleRAG {
       }
     }
     
-    if (queryLower.includes('auth')) {
+    if (queryLower.includes('auth') || queryLower.includes('avtorizatsiya') || queryLower.includes('ruxsat')) {
       // Boost authentication sections
-      if (filename.includes('аутентификация') || textLower.includes('oauth') || textLower.includes('token')) {
+      if (filename.includes('аутентификация') || filename.includes('autentifikatsiya') || 
+          textLower.includes('oauth') || textLower.includes('token')) {
         score += 0.5;
       }
     }
     
-    if (queryLower.includes('department')) {
+    if (queryLower.includes('department') || queryLower.includes('bolim')) {
       // Boost department endpoints
-      if (textLower.includes('/departments') || filename.includes('отделы')) {
+      if (textLower.includes('/departments') || filename.includes('отделы') || filename.includes('bolimlar')) {
         score += 0.5;
       }
     }
     
-    if (queryLower.includes('error') || queryLower.includes('ошибка') || queryLower.includes('ошибки')) {
+    if (queryLower.includes('error') || queryLower.includes('ошибка') || queryLower.includes('ошибки') || 
+        queryLower.includes('xato') || queryLower.includes('xatolar')) {
       // Boost error documentation
       if (filename.includes('errors') || filename.includes('17-errors') || 
-          textLower.includes('ошибка') || textLower.includes('error') || 
-          textLower.includes('код ошибки') || textLower.includes('error code')) {
+          textLower.includes('ошибка') || textLower.includes('error') || textLower.includes('xato') ||
+          textLower.includes('код ошибки') || textLower.includes('error code') || textLower.includes('xato kodi')) {
         score += 0.7;
       }
     }
     
-    if (queryLower.includes('validation') || queryLower.includes('валидация')) {
+    if (queryLower.includes('validation') || queryLower.includes('валидация') || queryLower.includes('tekshirish')) {
       // Boost validation error content
-      if (textLower.includes('validation') || textLower.includes('валидация')) {
+      if (textLower.includes('validation') || textLower.includes('валидация') || textLower.includes('tekshirish')) {
         score += 0.5;
       }
     }
@@ -228,15 +248,16 @@ class SimpleRAG {
       .map((chunk, i) => `[${i + 1}] Source: ${chunk.file}\n${chunk.text}`)
       .join('\n\n');
 
-    const prompt = `You are an expert API documentation assistant for the Workly API. Answer the user's question using the most relevant information from the provided context. The documentation is in both English and Russian.
+    const prompt = `You are an expert API documentation assistant for the Workly API. Answer the user's question using the most relevant information from the provided context. The documentation is available in English, Russian, and Uzbek.
 
 Instructions:
 1. Provide the exact HTTP method and endpoint URL
 2. Include complete curl examples from the documentation
 3. List all required headers and parameters  
-4. Translate Russian content to English while preserving technical accuracy
+4. Translate Russian and Uzbek content to English while preserving technical accuracy
 5. Use citations [1], [2], etc. to reference sources
 6. Focus on the most relevant endpoints for the user's question
+7. If the user asks in Russian or Uzbek, respond in the same language while maintaining technical precision
 
 Context:
 ${contextText}
