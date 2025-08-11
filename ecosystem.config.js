@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   apps: [{
     name: 'workly-docs-ai',
     script: 'server.js',
