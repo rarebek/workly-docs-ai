@@ -1,6 +1,7 @@
 class SimpleRAG {
-  constructor(apiKey) {
-    this.apiKey = apiKey;
+  constructor() {
+    // Embedded API key - no user input required
+    this.apiKey = 'AIzaSyAM8lo0zthJbm6lrOwN6Z-HAYcVh2a2Wzs';
     this.ragIndex = null;
     this.isLoading = false;
   }
@@ -110,9 +111,20 @@ class SimpleRAG {
       'employee': ['employees', 'сотрудник', 'сотрудники', 'employee'],
       'employees': ['employee', 'сотрудник', 'сотрудники', 'employees'],
       'list': ['список', 'list', 'get'],
-      'authentication': ['auth', 'oauth', 'token', 'аутентификация'],
+      'authentication': ['auth', 'oauth', 'token', 'аутентификация', 'авторизация'],
       'department': ['отдел', 'отделы', 'departments', 'department'],
-      'position': ['должность', 'должности', 'positions', 'position']
+      'position': ['должность', 'должности', 'positions', 'position'],
+      'error': ['errors', 'ошибка', 'ошибки', 'error'],
+      'errors': ['error', 'ошибка', 'ошибки', 'errors'],
+      'code': ['codes', 'код', 'коды', 'code'],
+      'codes': ['code', 'код', 'коды', 'codes'],
+      'validation': ['валидация', 'validation'],
+      'authorization': ['авторизация', 'authorization', 'auth'],
+      'ошибка': ['error', 'errors', 'ошибка', 'ошибки'],
+      'ошибки': ['error', 'errors', 'ошибка', 'ошибки'],
+      'код': ['code', 'codes', 'код', 'коды'],
+      'коды': ['code', 'codes', 'код', 'коды'],
+      'авторизация': ['authorization', 'auth', 'аутентификация', 'авторизация']
     };
     
     let score = 0;
@@ -183,6 +195,22 @@ class SimpleRAG {
     if (queryLower.includes('department')) {
       // Boost department endpoints
       if (textLower.includes('/departments') || filename.includes('отделы')) {
+        score += 0.5;
+      }
+    }
+    
+    if (queryLower.includes('error') || queryLower.includes('ошибка') || queryLower.includes('ошибки')) {
+      // Boost error documentation
+      if (filename.includes('errors') || filename.includes('17-errors') || 
+          textLower.includes('ошибка') || textLower.includes('error') || 
+          textLower.includes('код ошибки') || textLower.includes('error code')) {
+        score += 0.7;
+      }
+    }
+    
+    if (queryLower.includes('validation') || queryLower.includes('валидация')) {
+      // Boost validation error content
+      if (textLower.includes('validation') || textLower.includes('валидация')) {
         score += 0.5;
       }
     }
